@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import logging
+import webbrowser
 from notion_client import Client
 
 CONFIG_FILE = "config.json"
@@ -56,6 +57,18 @@ def get_database_schema(database_id):
         raise ValueError(f"Failed to retrieve the database schema: {e}")
 
 
+def get_title_property_name(database_id):
+    """Retrieve the name of the title property dynamically."""
+    try:
+        schema = get_database_schema(database_id)
+        for property_name, property_details in schema.items():
+            if property_details["type"] == "title":
+                return property_name
+        raise ValueError("No title property found in the database schema.")
+    except Exception as e:
+        raise ValueError(f"Failed to retrieve the title property: {e}")
+
+
 def map_template_to_database_properties(template_properties, database_schema):
     """Map template properties to the database schema."""
     mapped_properties = {}
@@ -90,7 +103,7 @@ def get_template_children(template_page_id):
         raise ValueError(f"Failed to fetch template page children: {e}")
 
 
-def create_new_page(db_config, title):
+def create_new_page(db_config, title, open_page=False):
     """Create a new page in the specified Notion database."""
     database_id = convert_to_uuid(db_config["id"])
     template_page_id = db_config.get("template")
@@ -101,6 +114,9 @@ def create_new_page(db_config, title):
 
     # Get the database schema
     database_schema = get_database_schema(database_id)
+
+    # Dynamically fetch the title property name
+    title_property_name = get_title_property_name(database_id)
 
     # Fetch template properties
     template_properties = {}
@@ -115,8 +131,8 @@ def create_new_page(db_config, title):
     mapped_properties = map_template_to_database_properties(template_properties, database_schema)
     valid_properties = filter_valid_properties(mapped_properties, database_schema)
 
-    # Add the title property
-    valid_properties["Title"] = {
+    # Add the dynamically identified title property
+    valid_properties[title_property_name] = {
         "title": [
             {
                 "text": {
@@ -141,6 +157,14 @@ def create_new_page(db_config, title):
             children=children
         )
         print(f"Page created successfully: {response['url']}")
+
+        # Open the page in the Notion app or browser if requested
+        if open_page:
+            notion_url = response["url"]
+            notion_app_url = notion_url.replace("https://", "notion://")
+            print(f"Opening page: {notion_app_url}")
+            webbrowser.open(notion_app_url, new=0, autoraise=True)
+
     except Exception as e:
         raise ValueError(f"Failed to create the page: {e}")
 
@@ -151,6 +175,7 @@ def main():
         parser = argparse.ArgumentParser(description="Create a new page in a Notion database.")
         parser.add_argument("--db", required=True, help="The label of the database to use.")
         parser.add_argument("--title", required=True, help="The title of the new page.")
+        parser.add_argument("--open", action="store_true", help="Open the created page after creation.")
         args = parser.parse_args()
 
         # Load configuration
@@ -160,7 +185,7 @@ def main():
         db_config = validate_database(args.db, config)
 
         # Create the page
-        create_new_page(db_config, args.title)
+        create_new_page(db_config, args.title, open_page=args.open)
 
     except Exception as e:
         print(f"Error: {e}")

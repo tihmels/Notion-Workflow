@@ -16,7 +16,30 @@
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
-				<string>Product Data</string>
+				<string>Open Notion</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>FF53DB88-335C-4E9A-B316-26D8618A8B7F</string>
+				<key>modifiers</key>
+				<integer>1048576</integer>
+				<key>modifiersubtext</key>
+				<string>Open Page</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>611DA820-9ABB-469A-9BE4-381A72E16AC3</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>08847631-8B9D-47EA-A0DA-AD31F423B422</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
 				<key>vitoclose</key>
 				<false/>
 			</dict>
@@ -26,6 +49,19 @@
 			<dict>
 				<key>destinationuid</key>
 				<string>B00959AB-493A-44E5-BFF9-83C438D06A5F</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>FF53DB88-335C-4E9A-B316-26D8618A8B7F</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>F89C21FA-027A-47B4-9C98-48B85E94C1EE</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -48,6 +84,27 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>setup</string>
+				<key>subtext</key>
+				<string></string>
+				<key>text</key>
+				<string>Setup Notion Configuration</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>611DA820-9ABB-469A-9BE4-381A72E16AC3</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>concurrently</key>
 				<false/>
 				<key>escaping</key>
@@ -55,13 +112,40 @@
 				<key>script</key>
 				<string>source venv/bin/activate
 
-# Read and split the query into DB and TITLE
+python3 setup.py</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>08847631-8B9D-47EA-A0DA-AD31F423B422</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>source venv/bin/activate
+
 query="{query}"
 DB=${query%% *}
 TITLE=${query#* }
 
-# Call the Python script with the parsed arguments
-python3 notion.py --db "$DB" --title "$TITLE"</string>
+if [ "${OPEN_NOTION:-}" = "true" ]; then
+    python3 notion.py --db "$DB" --title "$TITLE" --open
+else
+    python3 notion.py --db "$DB" --title "$TITLE"
+fi</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -114,31 +198,72 @@ python3 notion.py --db "$DB" --title "$TITLE"</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string>{query}</string>
+				<key>passthroughargument</key>
+				<true/>
+				<key>variables</key>
+				<dict>
+					<key>OPEN_NOTION</key>
+					<string>true</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>FF53DB88-335C-4E9A-B316-26D8618A8B7F</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string></string>
 	<key>uidata</key>
 	<dict>
+		<key>08847631-8B9D-47EA-A0DA-AD31F423B422</key>
+		<dict>
+			<key>xpos</key>
+			<real>420</real>
+			<key>ypos</key>
+			<real>70</real>
+		</dict>
 		<key>38D8235A-6DD1-4D8E-9FB8-FA22574F88CF</key>
 		<dict>
 			<key>xpos</key>
-			<real>170</real>
+			<real>95</real>
 			<key>ypos</key>
-			<real>125</real>
+			<real>230</real>
+		</dict>
+		<key>611DA820-9ABB-469A-9BE4-381A72E16AC3</key>
+		<dict>
+			<key>xpos</key>
+			<real>100</real>
+			<key>ypos</key>
+			<real>70</real>
 		</dict>
 		<key>B00959AB-493A-44E5-BFF9-83C438D06A5F</key>
 		<dict>
 			<key>xpos</key>
 			<real>610</real>
 			<key>ypos</key>
-			<real>155</real>
+			<real>260</real>
 		</dict>
 		<key>F89C21FA-027A-47B4-9C98-48B85E94C1EE</key>
 		<dict>
 			<key>xpos</key>
-			<real>395</real>
+			<real>425</real>
 			<key>ypos</key>
-			<real>125</real>
+			<real>230</real>
+		</dict>
+		<key>FF53DB88-335C-4E9A-B316-26D8618A8B7F</key>
+		<dict>
+			<key>xpos</key>
+			<real>300</real>
+			<key>ypos</key>
+			<real>375</real>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
