@@ -13,6 +13,7 @@ if not TOKEN:
 
 notion = Client(auth=TOKEN)
 
+
 def fetch_shared_databases():
     """Fetch all databases shared with the integration."""
     try:
@@ -26,23 +27,23 @@ def fetch_shared_databases():
         print(f"Error fetching databases: {e}")
         sys.exit(1)
 
+
 def generate_config(databases):
     """Generate the configuration file based on fetched databases."""
     config = {"databases": []}
     for db in databases:
         db_id = db.get("id")
         title = db.get("title", [])
-        if title:
-            label = title[0].get("plain_text", "Untitled")
-        else:
-            label = "Untitled"
+        label = title[0].get("plain_text", "Untitled") if title else "Untitled"
 
+        # Add the template field as null since template detection is not supported
         config["databases"].append({
             "label": label,
             "id": db_id,
-            "template": None  
+            "template": None
         })
     return config
+
 
 def write_config(config):
     """Write the configuration to the config.json file."""
@@ -54,6 +55,7 @@ def write_config(config):
         print(f"Error writing configuration file: {e}")
         sys.exit(1)
 
+
 def main():
     print("Fetching shared databases...")
     databases = fetch_shared_databases()
@@ -64,6 +66,7 @@ def main():
     print(f"Found {len(databases)} databases. Generating configuration...")
     config = generate_config(databases)
     write_config(config)
+
 
 if __name__ == "__main__":
     main()

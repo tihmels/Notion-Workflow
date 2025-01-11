@@ -1,13 +1,8 @@
 {
     "databases": [
         {
-            "label": "Companies",
+            "label": "Clients",
             "id": "d361c895-965a-4506-a2a9-cf9f38b28409",
-            "template": null
-        },
-        {
-            "label": "Tasks",
-            "id": "1482cd0c-ca79-4bda-9341-dea90c9dd5a3",
             "template": null
         },
         {
@@ -28,6 +23,11 @@
         {
             "label": "People",
             "id": "5b3b1382-adf7-4c1b-ba5a-aea26618286b",
+            "template": null
+        },
+        {
+            "label": "Tasks",
+            "id": "1482cd0c-ca79-4bda-9341-dea90c9dd5a3",
             "template": null
         }
     ]

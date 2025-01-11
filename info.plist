@@ -142,9 +142,9 @@ DB=${query%% *}
 TITLE=${query#* }
 
 if [ "${OPEN_NOTION:-}" = "true" ]; then
-    python3 notion.py --db "$DB" --title "$TITLE" --open
+    python3 main.py --db "$DB" --title "$TITLE" --open
 else
-    python3 notion.py --db "$DB" --title "$TITLE"
+    python3 main.py --db "$DB" --title "$TITLE"
 fi</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
@@ -240,7 +240,7 @@ fi</string>
 		<key>611DA820-9ABB-469A-9BE4-381A72E16AC3</key>
 		<dict>
 			<key>xpos</key>
-			<real>100</real>
+			<real>95</real>
 			<key>ypos</key>
 			<real>70</real>
 		</dict>
