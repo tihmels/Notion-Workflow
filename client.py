@@ -1,68 +1,60 @@
 import os
 import webbrowser
-from notion_client import Client
 import logging
-from utils import (
-    convert_to_uuid,
-    get_title_property_name,
-    get_template_children,
-    get_database_schema,
-    filter_supported_properties,
-)
+from notion_client import Client
+from utils import get_template_children, filter_supported_properties, get_database_schema
 
 TOKEN = os.getenv("NOTION_TOKEN")
+if not TOKEN:
+    raise EnvironmentError("NOTION_TOKEN environment variable is not set.")
 notion = Client(auth=TOKEN, log_level=logging.DEBUG)
 
 
+from utils import convert_to_uuid
+
 def create_new_page(db_config, title, template_id=None, open_page=False):
     """Create a new page in the specified Notion database."""
-    database_id = convert_to_uuid(db_config["id"])
-
-    # Fetch template properties and children if template ID is provided
-    template_properties = {}
+    database_id = db_config.get("id")
     children = []
-    if template_id:
-        try:
-            template_page = notion.pages.retrieve(page_id=template_id)
-            template_properties = template_page.get("properties", {})
+    properties = {}
+
+    try:
+        # Fetch the database schema and set properties for database pages
+        if database_id:
+            schema = get_database_schema(database_id, notion)
+            title_property = None
+            for key, value in schema.items():
+                if value.get("type") == "title":
+                    title_property = key
+                    break
+
+            if not title_property:
+                raise KeyError("The database does not have a title property.")
+
+            # Set the title property
+            properties[title_property] = {"title": [{"text": {"content": title}}]}
+
+        # If a template is provided, fetch its children and properties
+        if template_id:
             children = get_template_children(template_id, notion)
-        except Exception as e:
-            logging.error(f"Failed to fetch template properties or children: {e}")
+            template_page = notion.pages.retrieve(page_id=template_id)
+            if database_id:
+                properties.update(
+                    filter_supported_properties(template_page["properties"], schema)
+                )
 
-    # Dynamically fetch the title property name
-    title_property_name = get_title_property_name(database_id, notion)
+        # Define the parent for the page creation
+        parent = {"database_id": database_id} if database_id else {"type": "page_id", "page_id": template_id}
 
-    # Fetch the database schema to validate properties
-    try:
-        schema = get_database_schema(database_id, notion)
-        # Filter unsupported and computed properties
-        template_properties = filter_supported_properties(template_properties, schema)
-    except Exception as e:
-        logging.error(f"Failed to fetch schema or filter properties: {e}")
-        return
-
-    # Map and filter properties to match the database schema
-    mapped_properties = {
-        title_property_name: {
-            "title": [{"text": {"content": title}}]
-        }
-    }
-
-    # Add additional properties from the template if applicable
-    for key, value in template_properties.items():
-        if key not in mapped_properties:  # Avoid overriding the title
-            mapped_properties[key] = value
-
-    try:
-        # Create the page
+        # Create the new page
         response = notion.pages.create(
-            parent={"database_id": database_id},
-            properties=mapped_properties,
+            parent=parent,
+            properties=properties,
             children=children,
         )
         print(f"Page created successfully: {response['url']}")
 
-        # Open the page in the Notion app or browser if requested
+        # Open the page if requested
         if open_page:
             notion_url = response["url"]
             notion_app_url = notion_url.replace("https://", "notion://")
@@ -70,3 +62,4 @@ def create_new_page(db_config, title, template_id=None, open_page=False):
 
     except Exception as e:
         logging.error(f"Failed to create the page: {e}")
+        raise

@@ -1,21 +1,15 @@
 import json
 import os
 import re
+import logging
 
-CONFIG_FILE = "config.json"
-
-UNSUPPORTED_PROPERTIES = {
-    "rollup",
-    "created_by",
-    "created_time",
-    "last_edited_by",
-    "last_edited_time",
-    "verification",
-}
+DATABASES_FILE = "databases.json"
+TEMPLATES_FILE = "templates.json"
+UNSUPPORTED_PROPERTIES = {"rollup", "created_by", "created_time", "last_edited_by", "last_edited_time"}
 
 
 def filter_supported_properties(properties, schema):
-    """Remove unsupported and computed properties from the properties object."""
+    """Filter out unsupported and computed properties."""
     return {
         name: value
         for name, value in properties.items()
@@ -24,72 +18,64 @@ def filter_supported_properties(properties, schema):
 
 
 def load_configuration():
-    """Load and validate the JSON configuration file."""
-    if not os.path.exists(CONFIG_FILE):
-        raise FileNotFoundError(f"Configuration file '{CONFIG_FILE}' not found.")
-
+    """Load configuration files."""
+    if not os.path.exists(DATABASES_FILE) or not os.path.exists(TEMPLATES_FILE):
+        raise FileNotFoundError(f"Configuration files '{DATABASES_FILE}' or '{TEMPLATES_FILE}' not found.")
     try:
-        with open(CONFIG_FILE, "r") as file:
-            config = json.load(file)
+        with open(DATABASES_FILE, "r") as db_file:
+            databases = json.load(db_file)
+        with open(TEMPLATES_FILE, "r") as tmpl_file:
+            templates = json.load(tmpl_file)
 
-        if "databases" not in config or not isinstance(config["databases"], list):
-            raise ValueError("Invalid configuration: No 'databases' array found.")
-
-        return config
+        return {"databases": databases["databases"], "templates": templates["templates"]}
     except json.JSONDecodeError as e:
         raise ValueError(f"Error loading configuration: Invalid JSON format. {e}")
 
 
-def validate_database(db_label, config):
-    """Check if the given database label exists in the configuration."""
-    for db in config["databases"]:
-        if db["label"].lower() == db_label.lower():
-            return db
-    raise ValueError(f"No database found with label '{db_label}'.")
+def validate_database_or_template(label, config, is_template=False):
+    """Validate and retrieve database or template."""
+    try:
+        if is_template:
+            for template in config["templates"]:
+                if template["label"].lower() == label.lower():
+                    return {"template_id": template["id"]}
+            raise ValueError(f"No template found with label '{label}'.")
+        else:
+            for db in config["databases"]:
+                if db["label"].lower() == label.lower():
+                    return db
+            raise ValueError(f"No database found with label '{label}'.")
+    except KeyError as e:
+        raise ValueError(f"Configuration is missing expected keys: {e}")
 
 
 def convert_to_uuid(page_id):
-    """Convert a page ID to UUID format if needed."""
-    if re.match(r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$", page_id):
-        return page_id  # Already in UUID format
+    """Convert page ID to UUID format."""
     if re.match(r"^[a-f0-9]{32}$", page_id):
         return f"{page_id[:8]}-{page_id[8:12]}-{page_id[12:16]}-{page_id[16:20]}-{page_id[20:]}"
-    raise ValueError(f"Invalid page ID format: '{page_id}'.")
+    elif re.match(r"^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$", page_id):
+        return page_id
+    raise ValueError(f"Invalid page ID format: {page_id}")
 
 
-def get_title_property_name(database_id, notion_client):
-    """Retrieve the name of the title property dynamically."""
+def get_template_children(template_id, notion_client):
+    """Retrieve children (blocks) of a template page."""
     try:
-        schema = get_database_schema(database_id, notion_client)
-        for property_name, property_details in schema.items():
-            if property_details["type"] == "title":
-                return property_name
-        raise ValueError("No title property found in the database schema.")
+        response = notion_client.blocks.children.list(block_id=template_id)
+        children = response.get("results", [])
+        # Filter out unsupported block types
+        supported_children = [
+            block for block in children if block["type"] not in {"child_page"}
+        ]
+        return supported_children
     except Exception as e:
-        raise ValueError(f"Failed to retrieve the title property: {e}")
+        raise ValueError(f"Error retrieving template children: {e}")
 
 
 def get_database_schema(database_id, notion_client):
-    """Fetch the schema of the target database."""
+    """Retrieve the schema of a Notion database."""
     try:
         response = notion_client.databases.retrieve(database_id=database_id)
         return response.get("properties", {})
     except Exception as e:
-        raise ValueError(f"Failed to retrieve the database schema: {e}")
-
-
-def get_template_children(template_page_id, notion_client):
-    """Fetch the content blocks (children) of the template page."""
-    try:
-        response = notion_client.blocks.children.list(block_id=template_page_id)
-        return response.get("results", [])
-    except Exception as e:
-        raise ValueError(f"Failed to fetch template page children: {e}")
-
-
-def validate_template(template_label, db_config):
-    """Check if the given template label exists for the specified database."""
-    for template in db_config.get("templates", []):
-        if template["label"].lower() == template_label.lower():
-            return template["id"]
-    raise ValueError(f"No template found with label '{template_label}'.")
+        raise ValueError(f"Error retrieving database schema: {e}")
