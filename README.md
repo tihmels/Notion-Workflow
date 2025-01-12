@@ -1,29 +1,28 @@
 # Notion Page Creation Workflow for Alfred
 
-This repository contains a Python-based Alfred workflow that interacts with the Notion API to create new pages in specified databases. It supports multiple templates for each database, allowing users to dynamically select and apply a specific template while creating pages.
+This repository provides an Alfred workflow that integrates with the Notion API, enabling users to **create pages in Notion databases quickly and efficiently**. Whether you're using templates for standardized content or creating custom pages, this workflow simplifies your Notion page creation process directly from Alfred.
 
 ---
 
-## Features
+## Key Features
 
-- **Create Pages in Notion Databases**: Create new pages in configured Notion databases using Alfred.
-- **Template Support**: Select from multiple preconfigured templates for a database.
-- **Customizable Configuration**: Easily configure databases and templates using a JSON file.
-- **Open in Notion**: Automatically open the newly created page in the Notion desktop app or browser.
-
----
-
-## Setup Instructions
-
-### Prerequisites
-
-- **Python**: Ensure Python 3.7 or higher is installed.
-- **Notion Integration Token**: Generate an integration token from the [Notion Developers](https://www.notion.so/my-integrations) page.
-- **Alfred**: Install Alfred (with Powerpack) for running workflows.
+- **Effortless Page Creation**: Create new pages in your Notion databases directly from Alfred.
+- **Template Integration**: Use preconfigured templates to quickly generate pages with standardized content.
+- **Simple Configuration**: Customize databases and templates through easily editable JSON files.
 
 ---
 
-### Installation Steps
+## Prerequisites
+
+To use this workflow, you'll need:
+
+- **Python**: Ensure Python 3.7 or higher is installed on your system.
+- **Notion API Token**: Generate an integration token from the [Notion Developers](https://www.notion.so/my-integrations) page.
+- **Alfred App**: Install Alfred with the Powerpack for running workflows.
+
+---
+
+## Installation Steps
 
 1. **Clone the Repository**:
    ```bash
@@ -49,102 +48,122 @@ This repository contains a Python-based Alfred workflow that interacts with the 
    ```
 
 5. **Fetch Databases**:
-   Run the setup script to fetch your shared Notion databases and generate a `config.json` file:
+   Use the `setup.py` script to fetch shared Notion databases and create a `databases.json` configuration file:
    ```bash
    python setup.py
    ```
-   The script will output the databases shared with the integration. Edit `config.json` to add templates if necessary.
 
 6. **Install the Alfred Workflow**:
-   - Open the Alfred Preferences.
-   - Import the `.alfredworkflow` file in the repository.
+   - Open Alfred Preferences.
+   - Import the `.alfredworkflow` file located in this repository.
 
 ---
 
 ## Configuration
 
-The `config.json` file stores database and template configurations. It includes the following structure:
+The workflow uses two configuration files: 
 
+- **`databases.json`**: Contains information about the Notion databases available for creating pages.
+- **`templates.json`**: Defines templates associated with your databases.
+
+### Example: `databases.json`
 ```json
 {
     "databases": [
         {
-            "label": "Clients",
-            "id": "d361c895-965a-4506-a2a9-cf9f38b28409",
-            "templates": [
-                {
-                    "label": "Client Onboarding",
-                    "id": "template-id-1"
-                },
-                {
-                    "label": "Client Follow-up",
-                    "id": "template-id-2"
-                }
-            ]
+            "label": "Tasks",
+            "id": "1482cd0c-ca79-4bda-9341-dea90c9dd5a3"
         },
         {
             "label": "Projects",
-            "id": "7f84a64e-70f7-4b75-90cd-2d253f5ead1f",
-            "templates": []
+            "id": "7f84a64e-70f7-4b75-90cd-2d253f5ead1f"
         }
     ]
 }
 ```
 
-You can manually add template IDs under the `templates` array for each database.
+### Example: `templates.json`
+```json
+{
+    "templates": [
+        {
+            "label": "Product Presentation Task",
+            "id": "8b628b51afc84bdca85b0fc4bfea341c"
+        },
+        {
+            "label": "OTQA Task",
+            "id": "e050c11b3b4f49eb984e0f507599ad2a"
+        }
+    ]
+}
+```
+
+### Editing Configuration Files
+You can manually edit these files to update the database labels, IDs, or add templates as needed.
 
 ---
 
 ## Usage
 
+### Creating a New Page
 1. **Trigger the Workflow**:
-   - Open Alfred and type `notion`.
-   - Select a database from the list.
+   - Open Alfred and type `page`.
+   - Select a database label from the options.
 
-2. **Optional: Specify a Template**:
-   - After selecting a database, choose a template (if templates are configured).
+2. **Specify the Page Title**:
+   - Provide a title for the new page after selecting the database.
 
 3. **Page Creation**:
-   - The workflow creates a new page in the selected database using the template.
-   - The page is automatically opened in the Notion app or browser.
+   - A new page is created in the selected database.
+   - If you configured a template for the database, the page will inherit its structure and content.
+
+### Creating a Page Using a Template
+1. **Trigger the Workflow**:
+   - Open Alfred and type `template`.
+   - Select a template from the list.
+
+2. **Specify the Page Title**:
+   - Provide a title for the new page after selecting the template.
+
+3. **Page Creation**:
+   - A new page is created in the associated database using the selected template.
 
 ---
 
 ## Files in This Repository
 
 ### Python Scripts
-- **`main.py`**: Main script for creating pages.
-- **`setup.py`**: Fetches shared Notion databases and generates the configuration file.
-- **`client.py`**: Contains functions to interact with the Notion API.
-- **`utils.py`**: Helper functions for configuration and schema handling.
+- **`main.py`**: Core script for creating pages and templates.
+- **`setup.py`**: Fetches shared Notion databases and generates `databases.json`.
+- **`client.py`**: Handles interactions with the Notion API.
+- **`utils.py`**: Provides helper functions for configuration and schema validation.
 
-### Configuration
-- **`config.json`**: Stores database and template configurations.
+### Configuration Files
+- **`databases.json`**: Stores database IDs and labels.
+- **`templates.json`**: Stores template IDs and labels.
 
 ### Alfred Workflow
-- **`info.plist`**: Alfred workflow configuration file.
-- **`icon.png`**: Icon for the Alfred workflow.
-
----
-
-## Limitations
-
-- **No API Support for Templates**: Since Notion API does not support fetching templates directly, template IDs must be manually configured in `config.json`.
-- **Environment Variable Dependency**: The `NOTION_TOKEN` environment variable must be set before using the workflow.
+- **`icon.png`**: The icon displayed in Alfred.
+- **`info.plist`**: Configuration for the Alfred workflow.
 
 ---
 
 ## Troubleshooting
 
-- **Missing `config.json`**: Ensure `setup.py` is executed to fetch shared databases.
-- **Template Errors**: Verify the template IDs in `config.json` are valid.
-- **API Errors**: Check that the Notion integration is properly shared with the target databases.
+- **Missing `databases.json`**:
+  Ensure you’ve run `setup.py` to fetch your shared Notion databases.
+
+- **Template Errors**:
+  Verify that the template IDs in `templates.json` are correct and match those in your Notion workspace.
+
+- **Notion Token Issues**:
+  Ensure that your `NOTION_TOKEN` environment variable is set and the integration is shared with the relevant databases.
 
 ---
 
 ## Contributions
 
-Feel free to submit issues, suggestions, or pull requests to enhance this workflow. Contributions are welcome!
+Contributions are welcome! Feel free to submit issues, feature requests, or pull requests to improve this workflow.
 
 ---
 
