@@ -10,41 +10,48 @@ if not TOKEN:
 notion = Client(auth=TOKEN, log_level=logging.DEBUG)
 
 
-from utils import convert_to_uuid
-
 def create_new_page(db_config, title, template_id=None, open_page=False):
-    """Create a new page in the specified Notion database."""
+    """Create a new page in the specified Notion database or from a template."""
     database_id = db_config.get("id")
     children = []
     properties = {}
 
     try:
-        # Fetch the database schema and set properties for database pages
-        if database_id:
-            schema = get_database_schema(database_id, notion)
-            title_property = None
-            for key, value in schema.items():
-                if value.get("type") == "title":
-                    title_property = key
-                    break
-
-            if not title_property:
-                raise KeyError("The database does not have a title property.")
-
-            # Set the title property
-            properties[title_property] = {"title": [{"text": {"content": title}}]}
-
         # If a template is provided, fetch its children and properties
         if template_id:
-            children = get_template_children(template_id, notion)
+            # Get the template page details to fetch the database parent
             template_page = notion.pages.retrieve(page_id=template_id)
+            template_parent = template_page.get("parent", {})
+            if template_parent.get("type") == "database_id":
+                database_id = template_parent.get("database_id")
+            else:
+                raise ValueError("Template is not associated with a database.")
+
+            # Fetch the children blocks from the template
+            children = get_template_children(template_id, notion)
+
+            # Fetch the database schema and update properties if applicable
             if database_id:
+                schema = get_database_schema(database_id, notion)
                 properties.update(
-                    filter_supported_properties(template_page["properties"], schema)
+                    filter_supported_properties(template_page.get("properties", {}), schema)
                 )
 
+        # If creating within a database, set the title property
+        if database_id:
+            schema = get_database_schema(database_id, notion)
+            title_property = next(
+                (key for key, value in schema.items() if value.get("type") == "title"),
+                None
+            )
+            if not title_property:
+                raise KeyError("The database does not have a title property.")
+            properties[title_property] = {"title": [{"text": {"content": title}}]}
+
         # Define the parent for the page creation
-        parent = {"database_id": database_id} if database_id else {"type": "page_id", "page_id": template_id}
+        if not database_id:
+            raise ValueError("Cannot determine the parent database for the new page.")
+        parent = {"database_id": database_id}
 
         # Create the new page
         response = notion.pages.create(

@@ -1,12 +1,16 @@
 {
     "templates": [
         {
-            "label": "propres",
+            "label": "Product Presentation Task",
             "id": "8b628b51afc84bdca85b0fc4bfea341c"
         },
         {
-            "label": "test",
-            "id": "423211d9f9b34fbeb477a2e054484f82"
+            "label": "Product Data Task",
+            "id": "f1714c20c419488092cd0bc0f39ad2e9"
+        },
+        {
+            "label": "OTQA Task",
+            "id": "e050c11b3b4f49eb984e0f507599ad2a"
         }
     ]
 }

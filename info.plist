@@ -264,7 +264,7 @@ fi</string>
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>keyword</key>
-				<string>page</string>
+				<string>page_old</string>
 				<key>subtext</key>
 				<string></string>
 				<key>text</key>

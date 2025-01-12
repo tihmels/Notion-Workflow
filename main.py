@@ -33,7 +33,7 @@ def main():
             if not template_config or not template_config.get("template_id"):
                 raise ValueError(f"Invalid template configuration for label: {args.label}")
             create_new_page(
-                db_config={"id": None},  # Template pages do not belong to a database
+                db_config={"id": None},  # Templates are independent of databases
                 title=args.title or "Untitled",
                 template_id=convert_to_uuid(template_config["template_id"]),
                 open_page=args.open,
