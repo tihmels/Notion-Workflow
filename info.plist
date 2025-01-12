@@ -57,6 +57,29 @@
 				<false/>
 			</dict>
 		</array>
+		<key>622AD001-D0C8-4C69-AA19-4576381997B2</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>ECFE8F47-C0F2-47EC-97E4-A6C369B10B92</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string>Open Notion</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>C16B5077-FCFB-4DBA-98B7-88C6A6FF6CE2</string>
+				<key>modifiers</key>
+				<integer>1048576</integer>
+				<key>modifiersubtext</key>
+				<string>Open Page</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>8C0BF2AD-13DE-4725-BAD9-222896B08C5B</key>
 		<array/>
 		<key>B1A21E4D-476D-434D-88C5-06D00C07F62E</key>
@@ -78,6 +101,19 @@
 				<integer>1048576</integer>
 				<key>modifiersubtext</key>
 				<string>Open new Page</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>C16B5077-FCFB-4DBA-98B7-88C6A6FF6CE2</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>ECFE8F47-C0F2-47EC-97E4-A6C369B10B92</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
 				<key>vitoclose</key>
 				<false/>
 			</dict>
@@ -193,7 +229,7 @@ fi</string>
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>keyword</key>
-				<string>notion</string>
+				<string>page</string>
 				<key>subtext</key>
 				<string></string>
 				<key>text</key>
@@ -244,7 +280,7 @@ fi</string>
 				<key>escaping</key>
 				<integer>68</integer>
 				<key>keyword</key>
-				<string>notion</string>
+				<string>page</string>
 				<key>queuedelaycustom</key>
 				<integer>3</integer>
 				<key>queuedelayimmediatelyinitially</key>
@@ -401,6 +437,80 @@ fi</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>source venv/bin/activate
+
+query="{query}"
+DB=${query%% *}
+TITLE=${query#* }
+
+if [ "${OPEN_NOTION:-}" = "true" ]; then
+    python3 main.py --db "$DB" --title "$TITLE" --open
+else
+    python3 main.py --db "$DB" --title "$TITLE"
+fi</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>ECFE8F47-C0F2-47EC-97E4-A6C369B10B92</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>template</string>
+				<key>subtext</key>
+				<string></string>
+				<key>text</key>
+				<string>Create a new Notion page using a template</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>622AD001-D0C8-4C69-AA19-4576381997B2</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string>{query}</string>
+				<key>passthroughargument</key>
+				<true/>
+				<key>variables</key>
+				<dict>
+					<key>OPEN_NOTION</key>
+					<string>true</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>C16B5077-FCFB-4DBA-98B7-88C6A6FF6CE2</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string></string>
@@ -423,7 +533,7 @@ fi</string>
 		<key>576D674D-ADE0-4B23-BA8B-B9EAF7800B01</key>
 		<dict>
 			<key>xpos</key>
-			<real>300</real>
+			<real>305</real>
 			<key>ypos</key>
 			<real>585</real>
 		</dict>
@@ -434,19 +544,40 @@ fi</string>
 			<key>ypos</key>
 			<real>70</real>
 		</dict>
+		<key>622AD001-D0C8-4C69-AA19-4576381997B2</key>
+		<dict>
+			<key>xpos</key>
+			<real>100</real>
+			<key>ypos</key>
+			<real>670</real>
+		</dict>
 		<key>8C0BF2AD-13DE-4725-BAD9-222896B08C5B</key>
 		<dict>
 			<key>xpos</key>
-			<real>425</real>
+			<real>430</real>
 			<key>ypos</key>
 			<real>450</real>
 		</dict>
 		<key>B1A21E4D-476D-434D-88C5-06D00C07F62E</key>
 		<dict>
 			<key>xpos</key>
-			<real>90</real>
+			<real>95</real>
 			<key>ypos</key>
 			<real>450</real>
+		</dict>
+		<key>C16B5077-FCFB-4DBA-98B7-88C6A6FF6CE2</key>
+		<dict>
+			<key>xpos</key>
+			<real>305</real>
+			<key>ypos</key>
+			<real>815</real>
+		</dict>
+		<key>ECFE8F47-C0F2-47EC-97E4-A6C369B10B92</key>
+		<dict>
+			<key>xpos</key>
+			<real>430</real>
+			<key>ypos</key>
+			<real>670</real>
 		</dict>
 		<key>F89C21FA-027A-47B4-9C98-48B85E94C1EE</key>
 		<dict>

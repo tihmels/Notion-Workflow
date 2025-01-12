@@ -2,8 +2,25 @@ import json
 import os
 import re
 
-
 CONFIG_FILE = "config.json"
+
+UNSUPPORTED_PROPERTIES = {
+    "rollup",
+    "created_by",
+    "created_time",
+    "last_edited_by",
+    "last_edited_time",
+    "verification",
+}
+
+
+def filter_supported_properties(properties, schema):
+    """Remove unsupported and computed properties from the properties object."""
+    return {
+        name: value
+        for name, value in properties.items()
+        if schema.get(name, {}).get("type") not in UNSUPPORTED_PROPERTIES
+    }
 
 
 def load_configuration():
@@ -68,3 +85,11 @@ def get_template_children(template_page_id, notion_client):
         return response.get("results", [])
     except Exception as e:
         raise ValueError(f"Failed to fetch template page children: {e}")
+
+
+def validate_template(template_label, db_config):
+    """Check if the given template label exists for the specified database."""
+    for template in db_config.get("templates", []):
+        if template["label"].lower() == template_label.lower():
+            return template["id"]
+    raise ValueError(f"No template found with label '{template_label}'.")

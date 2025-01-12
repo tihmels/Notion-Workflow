@@ -1,25 +1,26 @@
 import argparse
 import sys
 from client import create_new_page
-from utils import load_configuration, validate_database
+from utils import load_configuration, validate_database, validate_template, convert_to_uuid
+
 
 def main():
     try:
-        # Parse command-line arguments
         parser = argparse.ArgumentParser(description="Create a new page in a Notion database.")
         parser.add_argument("--db", required=True, help="The label of the database to use.")
         parser.add_argument("--title", required=True, help="The title of the new page.")
+        parser.add_argument("--template", help="The label of the template to use (optional).")
         parser.add_argument("--open", action="store_true", help="Open the created page after creation.")
         args = parser.parse_args()
 
-        # Load configuration
         config = load_configuration()
-
-        # Validate database label
         db_config = validate_database(args.db, config)
 
-        # Create the page
-        create_new_page(db_config, args.title, open_page=args.open)
+        template_id = None
+        if args.template:
+            template_id = validate_template(args.template, db_config)
+
+        create_new_page(db_config, args.title, template_id=convert_to_uuid(template_id) if template_id else None, open_page=args.open)
 
     except Exception as e:
         print(f"Error: {e}")

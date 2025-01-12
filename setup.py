@@ -42,7 +42,7 @@ def generate_config(databases):
             "templates": []  
         })
     return config
-
+  
 def write_config(config):
     """Write the configuration to the config.json file."""
     try:
