@@ -29,21 +29,19 @@ def fetch_shared_databases():
 
 
 def generate_config(databases):
-    """Generate the configuration file based on fetched databases."""
+    """Generate the configuration file for databases."""
     config = {"databases": []}
     for db in databases:
         db_id = db.get("id")
         title = db.get("title", [])
         label = title[0].get("plain_text", "Untitled") if title else "Untitled"
 
-        # Add the template field as null since template detection is not supported
         config["databases"].append({
             "label": label,
             "id": db_id,
-            "template": None
+            "templates": []  
         })
     return config
-
 
 def write_config(config):
     """Write the configuration to the config.json file."""

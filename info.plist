@@ -31,6 +31,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>576D674D-ADE0-4B23-BA8B-B9EAF7800B01</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>8C0BF2AD-13DE-4725-BAD9-222896B08C5B</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>611DA820-9ABB-469A-9BE4-381A72E16AC3</key>
 		<array>
 			<dict>
@@ -44,11 +57,13 @@
 				<false/>
 			</dict>
 		</array>
-		<key>F89C21FA-027A-47B4-9C98-48B85E94C1EE</key>
+		<key>8C0BF2AD-13DE-4725-BAD9-222896B08C5B</key>
+		<array/>
+		<key>B1A21E4D-476D-434D-88C5-06D00C07F62E</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>B00959AB-493A-44E5-BFF9-83C438D06A5F</string>
+				<string>8C0BF2AD-13DE-4725-BAD9-222896B08C5B</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -56,7 +71,19 @@
 				<key>vitoclose</key>
 				<false/>
 			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>576D674D-ADE0-4B23-BA8B-B9EAF7800B01</string>
+				<key>modifiers</key>
+				<integer>1048576</integer>
+				<key>modifiersubtext</key>
+				<string>Open new Page</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
 		</array>
+		<key>F89C21FA-027A-47B4-9C98-48B85E94C1EE</key>
+		<array/>
 		<key>FF53DB88-335C-4E9A-B316-26D8618A8B7F</key>
 		<array>
 			<dict>
@@ -91,7 +118,7 @@
 				<key>subtext</key>
 				<string></string>
 				<key>text</key>
-				<string>Setup Notion Configuration</string>
+				<string>Fetch and Configure Notion Databases</string>
 				<key>withspace</key>
 				<false/>
 			</dict>
@@ -166,7 +193,7 @@ fi</string>
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>keyword</key>
-				<string>ns</string>
+				<string>notion</string>
 				<key>subtext</key>
 				<string></string>
 				<key>text</key>
@@ -178,23 +205,6 @@ fi</string>
 			<string>alfred.workflow.input.keyword</string>
 			<key>uid</key>
 			<string>38D8235A-6DD1-4D8E-9FB8-FA22574F88CF</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argument</key>
-				<string>'{query}'</string>
-				<key>cleardebuggertext</key>
-				<false/>
-				<key>processoutputs</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.utility.debug</string>
-			<key>uid</key>
-			<string>B00959AB-493A-44E5-BFF9-83C438D06A5F</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -218,6 +228,179 @@ fi</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<true/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<true/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>68</integer>
+				<key>keyword</key>
+				<string>notion</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string></string>
+				<key>script</key>
+				<string>import json
+import os
+import sys
+
+CONFIG_FILE = "config.json"
+
+def load_config():
+    """Load the config.json file."""
+    try:
+        with open(CONFIG_FILE, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        print(json.dumps({
+            "items": [{
+                "title": "Error: config.json not found",
+                "subtitle": f"Ensure {CONFIG_FILE} exists in the script's directory.",
+                "valid": False
+            }]
+        }))
+        sys.exit(1)
+    except json.JSONDecodeError:
+        print(json.dumps({
+            "items": [{
+                "title": "Error: config.json is not valid JSON",
+                "subtitle": "Check the file for formatting issues.",
+                "valid": False
+            }]
+        }))
+        sys.exit(1)
+
+
+def generate_script_filter_output(config):
+    """Generate JSON output for Alfred's Script Filter."""
+    items = []
+    for database in config.get("databases", []):
+        label = database.get("label", "Unknown Label")
+        db_id = database.get("id", "Unknown ID")
+
+        items.append({
+            "title": label,
+            "subtitle": f"Create a new page in {label} database",
+            "arg": label,
+            "autocomplete": label,
+            "icon": {
+                "path": "icon.png"  # Replace with your icon file path if available
+            }
+        })
+
+    # If no databases are found, display a friendly message
+    if not items:
+        items.append({
+            "title": "No databases found in config.json",
+            "subtitle": "Ensure the file contains valid database entries.",
+            "valid": False
+        })
+
+    return {"items": items}
+
+
+def main():
+    config = load_config()
+    output = generate_script_filter_output(config)
+    print(json.dumps(output))
+
+
+if __name__ == "__main__":
+    main()</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string></string>
+				<key>title</key>
+				<string>Create a Notion page</string>
+				<key>type</key>
+				<integer>9</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>B1A21E4D-476D-434D-88C5-06D00C07F62E</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>source venv/bin/activate
+
+DB_ID="${1}"
+
+DEFAULT_TITLE="Title"
+
+if [ -z "$DB_ID" ]; then
+    echo "No database ID provided."
+    exit 1
+fi
+
+if [ "${OPEN_NOTION:-}" = "true" ]; then
+    python3 main.py --db "$DB" --title "$DEFAULT_TITLE" --open
+else
+    python3 main.py --db "$DB" --title "$DEFAULT_TITLE"
+fi</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>8C0BF2AD-13DE-4725-BAD9-222896B08C5B</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string>{query}</string>
+				<key>passthroughargument</key>
+				<true/>
+				<key>variables</key>
+				<dict>
+					<key>OPEN_NOTION</key>
+					<string>true</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>576D674D-ADE0-4B23-BA8B-B9EAF7800B01</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string></string>
@@ -237,6 +420,13 @@ fi</string>
 			<key>ypos</key>
 			<real>230</real>
 		</dict>
+		<key>576D674D-ADE0-4B23-BA8B-B9EAF7800B01</key>
+		<dict>
+			<key>xpos</key>
+			<real>300</real>
+			<key>ypos</key>
+			<real>585</real>
+		</dict>
 		<key>611DA820-9ABB-469A-9BE4-381A72E16AC3</key>
 		<dict>
 			<key>xpos</key>
@@ -244,12 +434,19 @@ fi</string>
 			<key>ypos</key>
 			<real>70</real>
 		</dict>
-		<key>B00959AB-493A-44E5-BFF9-83C438D06A5F</key>
+		<key>8C0BF2AD-13DE-4725-BAD9-222896B08C5B</key>
 		<dict>
 			<key>xpos</key>
-			<real>610</real>
+			<real>425</real>
 			<key>ypos</key>
-			<real>260</real>
+			<real>450</real>
+		</dict>
+		<key>B1A21E4D-476D-434D-88C5-06D00C07F62E</key>
+		<dict>
+			<key>xpos</key>
+			<real>90</real>
+			<key>ypos</key>
+			<real>450</real>
 		</dict>
 		<key>F89C21FA-027A-47B4-9C98-48B85E94C1EE</key>
 		<dict>
