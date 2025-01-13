@@ -31,12 +31,16 @@ To use this workflow, you'll need:
    ```
 
 2. **Set Up a Virtual Environment**:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+   To ensure a consistent Python environment, set up a virtual environment in the workflow folder:
+   - Open Alfred Preferences, right-click the workflow, and select **Open in Terminal**. This opens the workflow folder directly in Terminal.
+   - Create and activate the virtual environment:
+     ```bash
+     python3 -m venv env
+     source env/bin/activate
+     ```
 
 3. **Install Dependencies**:
+   Install the required Python libraries:
    ```bash
    pip install -r requirements.txt
    ```
@@ -100,6 +104,37 @@ The workflow uses two configuration files:
 
 ### Editing Configuration Files
 You can manually edit these files to update the database labels, IDs, or add templates as needed.
+
+---
+
+## Setting Up the Python Environment for Workflow Execution
+
+To ensure your Python scripts run smoothly within Alfred:
+
+1. **Virtual Environment**:
+   Create and activate a virtual environment in your workflow folder (as described above).
+
+2. **Script Execution**:
+   Update Alfred actions to use a Zsh script for running Python scripts. The Zsh script ensures the virtual environment is activated before executing the Python script:
+   ```bash
+   source env/bin/activate
+   python3 your_script.py "$@"
+   deactivate
+   ```
+
+3. **Environment Variables**:
+   Alfred scripts may not inherit your Terminal's environment. Ensure the required variables like `PATH` are correctly set. If needed, source your shell's configuration:
+   ```bash
+   source ~/.zshrc
+   ```
+
+4. **Testing**:
+   Test the workflow by running a script manually within the virtual environment:
+   ```bash
+   source env/bin/activate
+   python your_script.py
+   deactivate
+   ```
 
 ---
 

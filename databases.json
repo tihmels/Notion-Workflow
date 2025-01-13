@@ -23,6 +23,10 @@
         {
             "label": "Tasks",
             "id": "1482cd0c-ca79-4bda-9341-dea90c9dd5a3"
+        },
+        {
+            "label": "Topics",
+            "id": "328b9a6e-c28e-40f8-9a59-7c726152b94c"
         }
     ]
 }
