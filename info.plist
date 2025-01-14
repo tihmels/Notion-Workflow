@@ -34,52 +34,6 @@
 				<false/>
 			</dict>
 		</array>
-		<key>679FE264-57A1-46C6-93DF-E0937E9A2168</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>8C0BF2AD-13DE-4725-BAD9-222896B08C5B</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>destinationuid</key>
-				<string>576D674D-ADE0-4B23-BA8B-B9EAF7800B01</string>
-				<key>modifiers</key>
-				<integer>1048576</integer>
-				<key>modifiersubtext</key>
-				<string>Open new page after creation</string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
-		<key>7E5C424A-8760-4619-AE24-0ACCB5BCAD13</key>
-		<array>
-			<dict>
-				<key>destinationuid</key>
-				<string>ECFE8F47-C0F2-47EC-97E4-A6C369B10B92</string>
-				<key>modifiers</key>
-				<integer>0</integer>
-				<key>modifiersubtext</key>
-				<string></string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-			<dict>
-				<key>destinationuid</key>
-				<string>C16B5077-FCFB-4DBA-98B7-88C6A6FF6CE2</string>
-				<key>modifiers</key>
-				<integer>1048576</integer>
-				<key>modifiersubtext</key>
-				<string>Open new page after creation</string>
-				<key>vitoclose</key>
-				<false/>
-			</dict>
-		</array>
 		<key>8C0BF2AD-13DE-4725-BAD9-222896B08C5B</key>
 		<array/>
 		<key>B1A21E4D-476D-434D-88C5-06D00C07F62E</key>
@@ -258,7 +212,6 @@ def load_config():
         }))
         sys.exit(1)
 
-
 def generate_script_filter_output(config):
     """Generate JSON output for Alfred's Script Filter."""
     items = []
@@ -268,15 +221,14 @@ def generate_script_filter_output(config):
 
         items.append({
             "title": label,
-            "subtitle": f"Create a new page in the {label} database",
-            "arg": label,
+            "subtitle": f"Create a new page in the '{label}' database",
+            "arg": db_id,      
             "autocomplete": label,
             "icon": {
-                "path": "icon.png"  # Adjust path if necessary
+                "path": "icon.png"
             }
         })
 
-    # If no databases are found, display a friendly message
     if not items:
         items.append({
             "title": "No databases found in databases.json",
@@ -286,12 +238,10 @@ def generate_script_filter_output(config):
 
     return {"items": items}
 
-
 def main():
     config = load_config()
     output = generate_script_filter_output(config)
     print(json.dumps(output))
-
 
 if __name__ == "__main__":
     main()</string>
@@ -325,18 +275,18 @@ if __name__ == "__main__":
 				<key>script</key>
 				<string>source venv/bin/activate
 
-LABEL="${1}"
+ID="${1}"
 DEFAULT_TITLE="Title"
 
-if [ -z "$LABEL" ]; then
-    echo "No label provided."
+if [ -z "$ID" ]; then
+    echo "No database ID provided."
     exit 1
 fi
 
 if [ "${OPEN_NOTION:-}" = "true" ]; then
-    python3 main.py page --label "$LABEL" --title "$DEFAULT_TITLE" --open
+    python3 main.py page --id "$ID" --title "$DEFAULT_TITLE" --open
 else
-    python3 main.py page --label "$LABEL" --title "$DEFAULT_TITLE"
+    python3 main.py page --id "$ID" --title "$DEFAULT_TITLE"
 fi</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
@@ -351,121 +301,6 @@ fi</string>
 			<string>8C0BF2AD-13DE-4725-BAD9-222896B08C5B</string>
 			<key>version</key>
 			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>alfredfiltersresults</key>
-				<true/>
-				<key>alfredfiltersresultsmatchmode</key>
-				<integer>0</integer>
-				<key>argumenttreatemptyqueryasnil</key>
-				<true/>
-				<key>argumenttrimmode</key>
-				<integer>0</integer>
-				<key>argumenttype</key>
-				<integer>1</integer>
-				<key>escaping</key>
-				<integer>68</integer>
-				<key>keyword</key>
-				<string>pg</string>
-				<key>queuedelaycustom</key>
-				<integer>3</integer>
-				<key>queuedelayimmediatelyinitially</key>
-				<true/>
-				<key>queuedelaymode</key>
-				<integer>0</integer>
-				<key>queuemode</key>
-				<integer>1</integer>
-				<key>runningsubtext</key>
-				<string></string>
-				<key>script</key>
-				<string>import json
-import os
-import sys
-
-CONFIG_FILE = "databases.json"
-
-def load_config():
-    """Load the databases.json file."""
-    try:
-        with open(CONFIG_FILE, "r") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        print(json.dumps({
-            "items": [{
-                "title": "Error: databases.json not found",
-                "subtitle": f"Ensure {CONFIG_FILE} exists in the script's directory.",
-                "valid": False
-            }]
-        }))
-        sys.exit(1)
-    except json.JSONDecodeError:
-        print(json.dumps({
-            "items": [{
-                "title": "Error: databases.json is not valid JSON",
-                "subtitle": "Check the file for formatting issues.",
-                "valid": False
-            }]
-        }))
-        sys.exit(1)
-
-
-def generate_script_filter_output(config):
-    """Generate JSON output for Alfred's Script Filter."""
-    items = []
-    for database in config.get("databases", []):
-        label = database.get("label", "Unknown Label")
-        db_id = database.get("id", "Unknown ID")
-
-        items.append({
-            "title": label,
-            "subtitle": f"Create a new page in the {label} database",
-            "arg": label,
-            "autocomplete": label,
-            "icon": {
-                "path": "icon.png"  # Adjust path if necessary
-            }
-        })
-
-    # If no databases are found, display a friendly message
-    if not items:
-        items.append({
-            "title": "No databases found in databases.json",
-            "subtitle": "Ensure the file contains valid database entries.",
-            "valid": False
-        })
-
-    return {"items": items}
-
-
-def main():
-    config = load_config()
-    output = generate_script_filter_output(config)
-    print(json.dumps(output))
-
-
-if __name__ == "__main__":
-    main()</string>
-				<key>scriptargtype</key>
-				<integer>0</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>subtext</key>
-				<string>Select the database where the new page should be created</string>
-				<key>title</key>
-				<string>Create a new Notion page</string>
-				<key>type</key>
-				<integer>9</integer>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.scriptfilter</string>
-			<key>uid</key>
-			<string>679FE264-57A1-46C6-93DF-E0937E9A2168</string>
-			<key>version</key>
-			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -486,6 +321,43 @@ if __name__ == "__main__":
 			<string>576D674D-ADE0-4B23-BA8B-B9EAF7800B01</string>
 			<key>version</key>
 			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>source venv/bin/activate
+
+ID="${1}"
+DEFAULT_TITLE="Title"
+
+if [ -z "$ID" ]; then
+    echo "No template ID provided."
+    exit 1
+fi
+
+if [ "${OPEN_NOTION:-}" = "true" ]; then
+    python3 main.py template --id "$ID" --title "$DEFAULT_TITLE" --open
+else
+    python3 main.py template --id "$ID" --title "$DEFAULT_TITLE"
+fi</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>ECFE8F47-C0F2-47EC-97E4-A6C369B10B92</string>
+			<key>version</key>
+			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -545,40 +417,34 @@ def load_config():
         }))
         sys.exit(1)
 
-
 def generate_script_filter_output(config):
     """Generate JSON output for Alfred's Script Filter."""
     items = []
-    for template in config.get("templates", []):
-        label = template.get("label", "Unknown Label")
-        tmpl_id = template.get("id", "Unknown ID")
+    for tmpl in config.get("templates", []):
+        label = tmpl.get("label", "Unknown Template")
+        tmpl_id = tmpl.get("id", "")
 
         items.append({
             "title": label,
             "subtitle": f"Create a new page using the {label} template",
-            "arg": label,
+            "arg": tmpl_id,
             "autocomplete": label,
-            "icon": {
-                "path": "icon.png"  # Adjust path if necessary
-            }
+            "icon": {"path": "icon.png"}
         })
 
-    # If no templates are found, display a friendly message
     if not items:
         items.append({
-            "title": "No templates found in templates.json",
-            "subtitle": "Ensure the file contains valid template entries.",
+            "title": "No templates found",
+            "subtitle": f"Check {CONFIG_FILE} for valid entries.",
             "valid": False
         })
 
     return {"items": items}
 
-
 def main():
     config = load_config()
     output = generate_script_filter_output(config)
     print(json.dumps(output))
-
 
 if __name__ == "__main__":
     main()</string>
@@ -599,158 +465,6 @@ if __name__ == "__main__":
 			<string>alfred.workflow.input.scriptfilter</string>
 			<key>uid</key>
 			<string>BE9862AA-88A7-465F-B84F-A3A67D562406</string>
-			<key>version</key>
-			<integer>3</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>concurrently</key>
-				<false/>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>script</key>
-				<string>source venv/bin/activate
-
-LABEL="${1}"
-DEFAULT_TITLE="Title"
-
-if [ -z "$LABEL" ]; then
-    echo "No label provided."
-    exit 1
-fi
-
-if [ "${OPEN_NOTION:-}" = "true" ]; then
-    python3 main.py template --label "$LABEL" --title "$DEFAULT_TITLE" --open
-else
-    python3 main.py template --label "$LABEL" --title "$DEFAULT_TITLE"
-fi</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>type</key>
-				<integer>11</integer>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.script</string>
-			<key>uid</key>
-			<string>ECFE8F47-C0F2-47EC-97E4-A6C369B10B92</string>
-			<key>version</key>
-			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>alfredfiltersresults</key>
-				<true/>
-				<key>alfredfiltersresultsmatchmode</key>
-				<integer>0</integer>
-				<key>argumenttreatemptyqueryasnil</key>
-				<true/>
-				<key>argumenttrimmode</key>
-				<integer>0</integer>
-				<key>argumenttype</key>
-				<integer>1</integer>
-				<key>escaping</key>
-				<integer>68</integer>
-				<key>keyword</key>
-				<string>tpg</string>
-				<key>queuedelaycustom</key>
-				<integer>3</integer>
-				<key>queuedelayimmediatelyinitially</key>
-				<true/>
-				<key>queuedelaymode</key>
-				<integer>0</integer>
-				<key>queuemode</key>
-				<integer>1</integer>
-				<key>runningsubtext</key>
-				<string></string>
-				<key>script</key>
-				<string>import json
-import os
-import sys
-
-CONFIG_FILE = "templates.json"
-
-def load_config():
-    """Load the templates.json file."""
-    try:
-        with open(CONFIG_FILE, "r") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        print(json.dumps({
-            "items": [{
-                "title": "Error: templates.json not found",
-                "subtitle": f"Ensure {CONFIG_FILE} exists in the script's directory.",
-                "valid": False
-            }]
-        }))
-        sys.exit(1)
-    except json.JSONDecodeError:
-        print(json.dumps({
-            "items": [{
-                "title": "Error: templates.json is not valid JSON",
-                "subtitle": "Check the file for formatting issues.",
-                "valid": False
-            }]
-        }))
-        sys.exit(1)
-
-
-def generate_script_filter_output(config):
-    """Generate JSON output for Alfred's Script Filter."""
-    items = []
-    for template in config.get("templates", []):
-        label = template.get("label", "Unknown Label")
-        tmpl_id = template.get("id", "Unknown ID")
-
-        items.append({
-            "title": label,
-            "subtitle": f"Create a new page using the {label} template",
-            "arg": label,
-            "autocomplete": label,
-            "icon": {
-                "path": "icon.png"  # Adjust path if necessary
-            }
-        })
-
-    # If no templates are found, display a friendly message
-    if not items:
-        items.append({
-            "title": "No templates found in templates.json",
-            "subtitle": "Ensure the file contains valid template entries.",
-            "valid": False
-        })
-
-    return {"items": items}
-
-
-def main():
-    config = load_config()
-    output = generate_script_filter_output(config)
-    print(json.dumps(output))
-
-
-if __name__ == "__main__":
-    main()</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>subtext</key>
-				<string></string>
-				<key>title</key>
-				<string>Create a new Notion page using a template</string>
-				<key>type</key>
-				<integer>9</integer>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.scriptfilter</string>
-			<key>uid</key>
-			<string>7E5C424A-8760-4619-AE24-0ACCB5BCAD13</string>
 			<key>version</key>
 			<integer>3</integer>
 		</dict>
@@ -789,9 +503,9 @@ if __name__ == "__main__":
 		<key>576D674D-ADE0-4B23-BA8B-B9EAF7800B01</key>
 		<dict>
 			<key>xpos</key>
-			<real>295</real>
+			<real>300</real>
 			<key>ypos</key>
-			<real>435</real>
+			<real>350</real>
 		</dict>
 		<key>611DA820-9ABB-469A-9BE4-381A72E16AC3</key>
 		<dict>
@@ -799,20 +513,6 @@ if __name__ == "__main__":
 			<real>100</real>
 			<key>ypos</key>
 			<real>40</real>
-		</dict>
-		<key>679FE264-57A1-46C6-93DF-E0937E9A2168</key>
-		<dict>
-			<key>xpos</key>
-			<real>95</real>
-			<key>ypos</key>
-			<real>350</real>
-		</dict>
-		<key>7E5C424A-8760-4619-AE24-0ACCB5BCAD13</key>
-		<dict>
-			<key>xpos</key>
-			<real>90</real>
-			<key>ypos</key>
-			<real>685</real>
 		</dict>
 		<key>8C0BF2AD-13DE-4725-BAD9-222896B08C5B</key>
 		<dict>
@@ -831,23 +531,23 @@ if __name__ == "__main__":
 		<key>BE9862AA-88A7-465F-B84F-A3A67D562406</key>
 		<dict>
 			<key>xpos</key>
-			<real>90</real>
+			<real>100</real>
 			<key>ypos</key>
-			<real>540</real>
+			<real>420</real>
 		</dict>
 		<key>C16B5077-FCFB-4DBA-98B7-88C6A6FF6CE2</key>
 		<dict>
 			<key>xpos</key>
-			<real>295</real>
+			<real>305</real>
 			<key>ypos</key>
-			<real>760</real>
+			<real>580</real>
 		</dict>
 		<key>ECFE8F47-C0F2-47EC-97E4-A6C369B10B92</key>
 		<dict>
 			<key>xpos</key>
-			<real>425</real>
+			<real>435</real>
 			<key>ypos</key>
-			<real>540</real>
+			<real>420</real>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
